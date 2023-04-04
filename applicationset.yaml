@@ -1,0 +1,68 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: projects-deploy
+spec:
+  goTemplate: true
+  generators:
+  - git:
+      repoURL: https://github.com/DavidGitter/app-set-test.git
+      revision: HEAD
+      directories:
+      - path: projects/*
+
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/DavidGitter/app-set-test.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}'
+      # syncPolicy:
+      #   syncOptions:
+      #   - CreateNamespace=true
+      #   automated:
+      #     selfHeal: true
+      #     prune: true
+
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: projects-deploy
+#   namespace: argocd
+# spec:
+#   project: default
+#   source:
+#     repoURL: https://github.com/DavidGitter/app-set-test.git
+#     targetRevision: HEAD
+#     path: projects/project1/
+#   destination:
+#     server: https://kubernetes.default.svc
+#     namespace: default
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: private-repo
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  url: https://github.com/DavidGitter/app-set-test.git
+  name: github-repo
+  insecure: "true"
+
+#steps
+# kubectl create namespace argocd
+# kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# kubectl get all -n argocd
+# kubectl port-forward svc/argocd-server -n argocd 8080:443
+# kubectl get secret -n argocd argocd-initial-admin-secret -o yaml
+# kubectl apply -f applicationset.yaml
