@@ -2,6 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: projects-deploy
+  namespace: default
 spec:
   goTemplate: true
   generators:
@@ -9,20 +10,20 @@ spec:
       repoURL: https://github.com/DavidGitter/app-set-test.git
       revision: HEAD
       directories:
-      - path: projects/*
+      - path: projects/project3/*
 
   template:
     metadata:
-      name: '{{.path.basename}}'
+      name: test
     spec:
       project: default
       source:
         repoURL: https://github.com/DavidGitter/app-set-test.git
         targetRevision: HEAD
-        path: '{{path}}'
+        path: projects/project3/*
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{path.basename}}'
+        namespace: default
       # syncPolicy:
       #   syncOptions:
       #   - CreateNamespace=true
